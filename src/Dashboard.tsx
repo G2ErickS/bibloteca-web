@@ -1,55 +1,40 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
-import type { Session } from '@supabase/supabase-js'
-import Libros from './Libros'
+import { useAuth } from './AuthContext'
 
-interface Props {
-  session: Session
-}
+const cardClass =
+  'bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg'
 
-export default function Dashboard({ session }: Props) {
-  const [nombre, setNombre] = useState('')
-  const [rol, setRol] = useState('')
-  const [cargando, setCargando] = useState(true)
-  const [vista, setVista] = useState<'menu' | 'libros'>('menu')
+export default function Dashboard() {
+  const { perfil, cargandoPerfil } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
+  // Mensaje enviado por otra pantalla (p. ej. "Préstamo confirmado")
+  const [aviso] = useState<string | null>(
+    () => (location.state as { mensaje?: string } | null)?.mensaje ?? null,
+  )
+
+  // Limpia el state del historial para que no reaparezca al recargar
   useEffect(() => {
-    const cargarUsuario = async () => {
-      console.log("ID de sesión actual:", session.user.id)
+    if (aviso) navigate('.', { replace: true, state: null })
+  }, [aviso, navigate])
 
-      const { data, error } = await supabase
-        .from('usuarios')
-        .select('nombre, rol')
-        .eq('id_usuario', session.user.id)
-        .maybeSingle()
-
-      console.log("Datos recibidos:", data)
-      console.log("Error recibido:", error)
-
-      if (!error && data) {
-        setNombre(data.nombre)
-        setRol(data.rol)
-      }
-      setCargando(false)
-    }
-
-    cargarUsuario()
-  }, [session])
+  const nombre = perfil?.nombre ?? ''
+  const rol = perfil?.rol ?? ''
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
+    navigate('/login', { replace: true })
   }
 
-  if (cargando) {
+  if (cargandoPerfil) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Cargando...
       </div>
     )
-  }
-
-  if (vista === 'libros') {
-    return <Libros rol={rol} onVolver={() => setVista('menu')} />
   }
 
   return (
@@ -74,32 +59,27 @@ export default function Dashboard({ session }: Props) {
 
       {/* Main */}
       <main className="p-8">
+        {aviso && (
+          <p className="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+            {aviso}
+          </p>
+        )}
         <h2 className="text-2xl font-semibold mb-6">Menú</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div
-            onClick={() => setVista('libros')}
-            className="bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg"
-          >
+          <Link to="/libros" className={cardClass}>
             📚 Libros
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg">
-            📅 Reservaciones
-          </div>
+          </Link>
+          <Link to="/carrito" className={cardClass}>
+            🛒 Carrito
+          </Link>
+          <div className={cardClass}>📅 Reservaciones</div>
           {(rol === 'admin' || rol === 'bibliotecario') && (
-            <div className="bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg">
-              📖 Préstamos
-            </div>
+            <div className={cardClass}>📖 Préstamos</div>
           )}
           {(rol === 'admin' || rol === 'bibliotecario') && (
-            <div className="bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg">
-              💰 Multas
-            </div>
+            <div className={cardClass}>💰 Multas</div>
           )}
-          {rol === 'admin' && (
-            <div className="bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg">
-              👥 Usuarios
-            </div>
-          )}
+          {rol === 'admin' && <div className={cardClass}>👥 Usuarios</div>}
         </div>
       </main>
     </div>
