@@ -6,7 +6,7 @@ import { useCart } from './CartContext'
 import { esStaff } from './roles'
 
 interface Libro {
-  id_libro: string
+  id_libro: number
   titulo: string
   autor: string
   isbn: string
@@ -85,7 +85,9 @@ export default function Libros() {
   const [archivo, setArchivo] = useState<File | null>(null)
   const inputArchivoRef = useRef<HTMLInputElement>(null)
   const [guardando, setGuardando] = useState(false)
-  const [eliminandoId, setEliminandoId] = useState<string | null>(null)
+  const [eliminandoId, setEliminandoId] = useState<number | null>(null)
+  const [reservandoId, setReservandoId] = useState<number | null>(null)
+  const reservaBloqueoRef = useRef(false)
   const [mensaje, setMensaje] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
 
   const cargarLibros = async () => {
@@ -99,7 +101,10 @@ export default function Libros() {
     if (error) {
       setErrorCarga('No se pudieron cargar los libros: ' + error.message)
     } else {
-      setLibros((data ?? []) as Libro[])
+      // Garantiza id_libro numérico en runtime (p. ej. si PostgREST lo devuelve como texto)
+      setLibros(
+        ((data ?? []) as Libro[]).map((l) => ({ ...l, id_libro: Number(l.id_libro) })),
+      )
     }
     setCargando(false)
   }
@@ -277,7 +282,7 @@ export default function Libros() {
   }
 
   const handleEliminar = async (libro: Libro) => {
-    if (eliminandoId) return
+    if (eliminandoId !== null) return
     if (!window.confirm(`¿Eliminar "${libro.titulo}"? Esta acción no se puede deshacer.`)) return
 
     setMensaje(null)
@@ -307,6 +312,32 @@ export default function Libros() {
       })
     } finally {
       setEliminandoId(null)
+    }
+  }
+
+  /** Libro agotado: se aparta en la lista de espera con crear_reservacion */
+  const handleReservar = async (libro: Libro) => {
+    if (reservaBloqueoRef.current) return
+    reservaBloqueoRef.current = true
+    setMensaje(null)
+    setReservandoId(libro.id_libro)
+    try {
+      const idLibro = Number(libro.id_libro)
+      if (!Number.isInteger(idLibro)) throw new Error('Identificador de libro inválido.')
+
+      const { error } = await supabase.rpc('crear_reservacion', { p_id_libro: idLibro })
+      if (error) throw error
+
+      setMensaje({
+        tipo: 'ok',
+        texto: 'Reservación guardada con éxito en lista de espera.',
+      })
+    } catch (err) {
+      // Ej.: usuario deudor o reservación activa previa
+      setMensaje({ tipo: 'error', texto: mensajeDeError(err) })
+    } finally {
+      reservaBloqueoRef.current = false
+      setReservandoId(null)
     }
   }
 
@@ -492,12 +523,25 @@ export default function Libros() {
                           titulo: libro.titulo,
                           autor: libro.autor,
                           imagen_url: libro.imagen_url,
+                          stock_disponible: libro.stock_disponible,
                         })
                       }
                       disabled={enCarrito}
                       className="mt-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
                     >
                       {enCarrito ? 'En el carrito' : 'Añadir al carrito'}
+                    </button>
+                  )}
+
+                  {esLector && libro.stock_disponible <= 0 && (
+                    <button
+                      onClick={() => handleReservar(libro)}
+                      disabled={reservandoId !== null}
+                      className="mt-3 bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      {reservandoId === libro.id_libro
+                        ? 'Reservando...'
+                        : 'Agotado - Apartar / Reservar'}
                     </button>
                   )}
                 </div>

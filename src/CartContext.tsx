@@ -11,18 +11,20 @@ import { useAuth } from './AuthContext'
 
 /** Datos mínimos de un libro para mostrarlo en el carrito */
 export interface LibroCarrito {
-  id_libro: string
+  id_libro: number
   titulo: string
   autor: string
   imagen_url: string | null
+  /** Existencias al momento de agregarlo (el carrito las revalida contra la BD) */
+  stock_disponible?: number
 }
 
 interface CartContextValue {
   carrito: LibroCarrito[]
   agregarLibro: (libro: LibroCarrito) => void
-  eliminarLibro: (idLibro: string) => void
+  eliminarLibro: (idLibro: number) => void
   vaciarCarrito: () => void
-  estaEnCarrito: (idLibro: string) => boolean
+  estaEnCarrito: (idLibro: number) => boolean
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined)
@@ -40,14 +42,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     )
   }, [])
 
-  const eliminarLibro = useCallback((idLibro: string) => {
+  const eliminarLibro = useCallback((idLibro: number) => {
     setCarrito((actual) => actual.filter((l) => l.id_libro !== idLibro))
   }, [])
 
   const vaciarCarrito = useCallback(() => setCarrito([]), [])
 
   const estaEnCarrito = useCallback(
-    (idLibro: string) => carrito.some((l) => l.id_libro === idLibro),
+    (idLibro: number) => carrito.some((l) => l.id_libro === idLibro),
     [carrito],
   )
 

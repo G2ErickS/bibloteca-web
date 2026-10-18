@@ -7,6 +7,11 @@ import Login from './Login'
 import Dashboard from './Dashboard'
 import Libros from './Libros'
 import Carrito from './Carrito'
+import Prestamos from './Prestamos'
+import Multas from './Multas'
+import Reservaciones from './Reservaciones'
+import Usuarios from './Usuarios'
+import Historial from './Historial'
 
 /** Rutas solo para usuarios sin sesión (si ya hay sesión -> /dashboard) */
 function PublicOnlyRoute({ children }: { children: ReactNode }) {
@@ -52,6 +57,16 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/libros" element={<Libros />} />
               <Route path="/carrito" element={<Carrito />} />
+              <Route path="/prestamos" element={<Prestamos />} />
+              <Route path="/reservaciones" element={<Reservaciones />} />
+              <Route path="/multas" element={<Multas />} />
+              <Route path="/usuarios" element={<Usuarios />} />
+              <Route path="/historial" element={<Historial />} />
+              {/* Ruta antigua: la gestión de devoluciones vive ahora en Préstamos */}
+              <Route
+                path="/devoluciones"
+                element={<Navigate to="/prestamos" replace />}
+              />
             </Route>
   
             <Route path="*" element={<NoEncontrado />} />

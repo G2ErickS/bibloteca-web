@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
+import { esAdmin } from './roles'
 
 const cardClass =
   'bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg'
@@ -72,14 +73,23 @@ export default function Dashboard() {
           <Link to="/carrito" className={cardClass}>
             🛒 Carrito
           </Link>
-          <div className={cardClass}>📅 Reservaciones</div>
-          {(rol === 'admin' || rol === 'bibliotecario') && (
-            <div className={cardClass}>📖 Préstamos</div>
+          <Link to="/prestamos" className={cardClass}>
+            📖 Préstamos
+          </Link>
+          <Link to="/reservaciones" className={cardClass}>
+            📅 Reservaciones
+          </Link>
+          <Link to="/multas" className={cardClass}>
+            💰 Multas
+          </Link>
+          <Link to="/historial" className={cardClass}>
+            🧾 Historial
+          </Link>
+          {esAdmin(rol) && (
+            <Link to="/usuarios" className={cardClass}>
+              👥 Usuarios
+            </Link>
           )}
-          {(rol === 'admin' || rol === 'bibliotecario') && (
-            <div className={cardClass}>💰 Multas</div>
-          )}
-          {rol === 'admin' && <div className={cardClass}>👥 Usuarios</div>}
         </div>
       </main>
     </div>
