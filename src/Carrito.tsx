@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, BookOpen, ShoppingCart } from 'lucide-react'
+import {
+  btnPrimarioClass,
+  btnSecundarioClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  mainClass,
+  vacioClass,
+} from './ui'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { useCart } from './CartContext'
@@ -173,34 +183,33 @@ export default function Carrito() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Carrito de préstamos</h1>
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <ShoppingCart className="w-6 h-6" />
+          Carrito de préstamos
+        </h1>
         <div className="flex items-center gap-3">
-          <Link
-            to="/libros"
-            className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-          >
+          <Link to="/libros" className={headerBtnClass}>
+            <BookOpen className="w-4 h-4" />
             Ver libros
           </Link>
-          <Link
-            to="/dashboard"
-            className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-          >
+          <Link to="/dashboard" className={headerBtnClass}>
+            <ArrowLeft className="w-4 h-4" />
             Volver al menú
           </Link>
         </div>
       </header>
 
-      <main className="p-8 max-w-2xl">
-        {errorGeneral && <p className="mb-4 text-sm text-red-600">{errorGeneral}</p>}
+      <main className={mainClass}>
+        {errorGeneral && <p className="text-sm text-red-600">{errorGeneral}</p>}
 
         {avisoReserva && (
           <p
             role={avisoReserva.tipo === 'error' ? 'alert' : 'status'}
-            className={`mb-4 rounded px-4 py-2 text-sm ${
+            className={`rounded-lg border px-4 py-3 text-sm ${
               avisoReserva.tipo === 'exito'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {avisoReserva.texto}
@@ -208,9 +217,9 @@ export default function Carrito() {
         )}
 
         {hayResultados && (
-          <div className="mb-6 space-y-3">
+          <div className="space-y-3">
             {exitosos.length > 0 && (
-              <div className="rounded bg-green-100 text-green-800 px-4 py-3 text-sm">
+              <div className="rounded-lg border border-green-200 bg-green-50 text-green-800 px-4 py-3 text-sm">
                 <p className="font-semibold">Prestados correctamente:</p>
                 <ul className="list-disc ml-5">
                   {exitosos.map((titulo) => (
@@ -223,7 +232,7 @@ export default function Carrito() {
             {fallos.length > 0 && (
               <div
                 role="alert"
-                className="rounded bg-red-100 text-red-800 px-4 py-3 text-sm"
+                className="rounded-lg border border-red-200 bg-red-50 text-red-800 px-4 py-3 text-sm"
               >
                 <p className="font-semibold">
                   No se pudieron prestar (siguen en tu carrito):
@@ -241,22 +250,25 @@ export default function Carrito() {
         )}
 
         {carrito.length === 0 ? (
-          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-            🛒 Tu carrito está vacío.{' '}
-            <Link to="/libros" className="text-blue-600 underline">
-              Explorar libros
-            </Link>
+          <div className={vacioClass}>
+            <ShoppingCart className="w-8 h-8 text-gray-400" />
+            <span>
+              Tu carrito está vacío.{' '}
+              <Link to="/libros" className="text-green-700 font-medium underline">
+                Explorar libros
+              </Link>
+            </span>
           </div>
         ) : (
           <>
-            <ul className="space-y-3 mb-6">
+            <ul className="space-y-3">
               {carrito.map((libro) => {
                 const agotado = estaAgotado(libro)
                 return (
                 <li
                   key={libro.id_libro}
-                  className={`bg-white p-3 rounded-lg shadow ${
-                    agotado ? 'border border-orange-300' : ''
+                  className={`bg-white p-4 rounded-xl shadow-sm border ${
+                    agotado ? 'border-orange-300' : 'border-gray-200'
                   }`}
                 >
                 <div className="flex items-center gap-4">
@@ -267,8 +279,8 @@ export default function Carrito() {
                       className="w-14 h-20 object-cover rounded"
                     />
                   ) : (
-                    <div className="w-14 h-20 bg-gray-200 rounded flex items-center justify-center text-2xl text-gray-400">
-                      📖
+                    <div className="w-14 h-20 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                      <BookOpen className="w-6 h-6" />
                     </div>
                   )}
                   <div className="flex-1">
@@ -278,19 +290,19 @@ export default function Carrito() {
                   <button
                     onClick={() => eliminarLibro(libro.id_libro)}
                     disabled={procesando || reservandoId !== null}
-                    className="text-red-600 hover:underline disabled:opacity-50"
+                    className="text-red-600 font-medium hover:text-red-700 hover:underline disabled:opacity-50"
                   >
                     Quitar
                   </button>
                 </div>
 
                 {agotado && (
-                  <div className="mt-3 rounded bg-orange-50 text-orange-800 px-3 py-2 text-sm flex items-center justify-between gap-3">
+                  <div className="mt-3 rounded-lg border border-orange-200 bg-orange-50 text-orange-800 px-3 py-2 text-sm flex items-center justify-between gap-3">
                     <span>{MENSAJE_AGOTADO}</span>
                     <button
                       onClick={() => handleReservar(libro)}
                       disabled={procesando || reservandoId !== null}
-                      className="shrink-0 bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 disabled:opacity-50"
+                      className="shrink-0 bg-orange-600 hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {reservandoId === libro.id_libro
                         ? 'Reservando...'
@@ -303,7 +315,7 @@ export default function Carrito() {
               })}
             </ul>
 
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600">
               {carrito.length} libro(s) en el carrito
               {hayAgotados && ` (${carrito.length - prestables.length} agotado(s))`}.
             </p>
@@ -312,14 +324,14 @@ export default function Carrito() {
               <button
                 onClick={handleConfirmar}
                 disabled={procesando || reservandoId !== null || prestables.length === 0}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                className={btnPrimarioClass}
               >
                 {procesando ? 'Procesando...' : 'Confirmar préstamo'}
               </button>
               <button
                 onClick={vaciarCarrito}
                 disabled={procesando}
-                className="border px-4 py-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                className={btnSecundarioClass}
               >
                 Vaciar carrito
               </button>

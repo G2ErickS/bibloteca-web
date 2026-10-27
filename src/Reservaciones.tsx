@@ -1,5 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, BookOpen, CalendarClock, Inbox } from 'lucide-react'
+import {
+  btnPeligroClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  insigniaClass,
+  mainClass,
+  tablaClass,
+  tablaContenedorClass,
+  tdClass,
+  thClass,
+  trZebraClass,
+  vacioClass,
+} from './ui'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esStaff } from './roles'
@@ -62,7 +77,7 @@ const estadoClase: Record<EstadoReservacion, string> = {
 function InsigniaEstado({ estado }: { estado: EstadoReservacion }) {
   return (
     <span
-      className={`px-2 py-0.5 rounded text-xs font-semibold ${
+      className={`${insigniaClass} ${
         estadoClase[estado] ?? 'bg-gray-100 text-gray-800'
       }`}
     >
@@ -155,36 +170,33 @@ export default function Reservaciones() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <CalendarClock className="w-6 h-6" />
           {staff ? 'Reservaciones' : 'Mis reservaciones'}
         </h1>
         <div className="flex items-center gap-3">
           {!staff && (
-            <Link
-              to="/libros"
-              className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-            >
+            <Link to="/libros" className={headerBtnClass}>
+              <BookOpen className="w-4 h-4" />
               Ver libros
             </Link>
           )}
-          <Link
-            to="/dashboard"
-            className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-          >
+          <Link to="/dashboard" className={headerBtnClass}>
+            <ArrowLeft className="w-4 h-4" />
             Volver al menú
           </Link>
         </div>
       </header>
 
-      <main className="p-8 max-w-6xl">
+      <main className={mainClass}>
         {aviso && (
           <p
             role={aviso.tipo === 'error' ? 'alert' : 'status'}
-            className={`mb-4 rounded px-4 py-2 text-sm ${
+            className={`rounded-lg border px-4 py-3 text-sm ${
               aviso.tipo === 'exito'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {aviso.texto}
@@ -194,23 +206,28 @@ export default function Reservaciones() {
         {cargando ? (
           <p className="text-gray-600">Cargando reservaciones...</p>
         ) : reservaciones.length === 0 ? (
-          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-            {staff
-              ? '📭 No hay reservaciones registradas.'
-              : '📭 No tienes reservaciones. Si un libro está agotado, puedes apartarlo desde el catálogo.'}
+          <div className={vacioClass}>
+            <Inbox className="w-8 h-8 text-gray-400" />
+            <span>
+              {staff
+                ? 'No hay reservaciones registradas.'
+                : 'No tienes reservaciones. Si un libro está agotado, puedes apartarlo desde el catálogo.'}
+            </span>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+          <div className={tablaContenedorClass}>
+            <table className={tablaClass}>
+              <thead>
                 <tr>
-                  {staff && <th className="p-3">ID</th>}
-                  {staff && <th className="p-3">Usuario</th>}
-                  <th className="p-3">Libro</th>
-                  {!staff && <th className="p-3">Autor</th>}
-                  <th className="p-3">Fecha de solicitud</th>
-                  <th className="p-3">Estado</th>
-                  <th className="p-3 text-right">{staff ? 'Acciones' : 'Acción'}</th>
+                  {staff && <th className={thClass}>ID</th>}
+                  {staff && <th className={thClass}>Usuario</th>}
+                  <th className={thClass}>Libro</th>
+                  {!staff && <th className={thClass}>Autor</th>}
+                  <th className={thClass}>Fecha de solicitud</th>
+                  <th className={thClass}>Estado</th>
+                  <th className={`${thClass} text-right`}>
+                    {staff ? 'Acciones' : 'Acción'}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -218,23 +235,25 @@ export default function Reservaciones() {
                   const libro = primero(r.libros)
                   const pendiente = r.estado === 'Pendiente'
                   return (
-                    <tr key={r.id_reservacion} className="border-t">
-                      {staff && <td className="p-3">{r.id_reservacion}</td>}
+                    <tr key={r.id_reservacion} className={trZebraClass}>
+                      {staff && <td className={tdClass}>{r.id_reservacion}</td>}
                       {staff && (
-                        <td className="p-3">{primero(r.usuarios)?.nombre ?? '—'}</td>
+                        <td className={tdClass}>
+                          {primero(r.usuarios)?.nombre ?? '—'}
+                        </td>
                       )}
-                      <td className="p-3 font-medium">{libro?.titulo ?? '—'}</td>
-                      {!staff && <td className="p-3">{libro?.autor ?? '—'}</td>}
-                      <td className="p-3">{formatearFecha(r.fecha_solicitud)}</td>
-                      <td className="p-3">
+                      <td className={`${tdClass} font-medium`}>{libro?.titulo ?? '—'}</td>
+                      {!staff && <td className={tdClass}>{libro?.autor ?? '—'}</td>}
+                      <td className={tdClass}>{formatearFecha(r.fecha_solicitud)}</td>
+                      <td className={tdClass}>
                         <InsigniaEstado estado={r.estado} />
                       </td>
-                      <td className="p-3 text-right">
+                      <td className={`${tdClass} text-right`}>
                         {pendiente && (
                           <button
                             onClick={() => handleCancelar(r)}
                             disabled={cancelandoId !== null}
-                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
+                            className={btnPeligroClass}
                           >
                             {cancelandoId === r.id_reservacion
                               ? 'Cancelando...'

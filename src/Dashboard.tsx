@@ -3,9 +3,23 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esAdmin } from './roles'
+import { headerBtnClass, headerClass, mainClass } from './ui'
+import {
+  BookOpen,
+  Banknote,
+  BookMarked,
+  CalendarClock,
+  LogOut,
+  ScrollText,
+  ShoppingCart,
+  Users,
+} from 'lucide-react'
 
 const cardClass =
-  'bg-white p-6 rounded-lg shadow text-center cursor-pointer hover:shadow-lg'
+  'bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 flex flex-col items-center justify-center p-6 gap-3 cursor-pointer'
+
+const iconClass = 'w-6 h-6 text-green-600'
+const labelClass = 'font-semibold text-gray-700'
 
 export default function Dashboard() {
   const { perfil, cargandoPerfil } = useAuth()
@@ -41,53 +55,58 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">
+      <header className={headerClass}>
+        <h1 className="text-xl font-bold tracking-tight">
           Facultad de Ingeniería Mecánica y Eléctrica
         </h1>
         <div className="flex items-center gap-4">
-          <span>
+          <span className="text-sm text-green-50">
             {nombre} ({rol})
           </span>
-          <button
-            onClick={handleLogout}
-            className="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100"
-          >
+          <button onClick={handleLogout} className={headerBtnClass}>
+            <LogOut className="w-4 h-4" />
             Salir
           </button>
         </div>
       </header>
 
       {/* Main */}
-      <main className="p-8">
+      <main className={mainClass}>
         {aviso && (
-          <p className="mb-4 rounded bg-green-100 text-green-800 px-4 py-2">
+          <p className="rounded-lg border border-green-200 bg-green-50 text-green-800 px-4 py-3 text-sm">
             {aviso}
           </p>
         )}
-        <h2 className="text-2xl font-semibold mb-6">Menú</h2>
+        <h2 className="text-2xl font-semibold text-gray-800">Menú</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/libros" className={cardClass}>
-            📚 Libros
+            <BookOpen className={iconClass} />
+            <span className={labelClass}>Libros</span>
           </Link>
           <Link to="/carrito" className={cardClass}>
-            🛒 Carrito
+            <ShoppingCart className={iconClass} />
+            <span className={labelClass}>Carrito</span>
           </Link>
           <Link to="/prestamos" className={cardClass}>
-            📖 Préstamos
+            <BookMarked className={iconClass} />
+            <span className={labelClass}>Préstamos</span>
           </Link>
           <Link to="/reservaciones" className={cardClass}>
-            📅 Reservaciones
+            <CalendarClock className={iconClass} />
+            <span className={labelClass}>Reservaciones</span>
           </Link>
           <Link to="/multas" className={cardClass}>
-            💰 Multas
+            <Banknote className={iconClass} />
+            <span className={labelClass}>Multas</span>
           </Link>
           <Link to="/historial" className={cardClass}>
-            🧾 Historial
+            <ScrollText className={iconClass} />
+            <span className={labelClass}>Historial</span>
           </Link>
           {esAdmin(rol) && (
             <Link to="/usuarios" className={cardClass}>
-              👥 Usuarios
+              <Users className={iconClass} />
+              <span className={labelClass}>Usuarios</span>
             </Link>
           )}
         </div>

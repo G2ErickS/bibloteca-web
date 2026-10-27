@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, Inbox, ScrollText } from 'lucide-react'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esStaff } from './roles'
+import {
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  insigniaClass,
+  mainClass,
+  tablaClass,
+  tablaContenedorClass,
+  tdClass,
+  thClass,
+  trZebraClass,
+  vacioClass,
+} from './ui'
 
 /** Columnas oficiales de la tabla `historial` (pág. 7 del PIA). No tiene id_libro. */
 interface Historial {
@@ -18,7 +32,8 @@ interface HistorialConDetalle extends Historial {
 }
 
 /** Celdas con líneas verticales que separan las columnas */
-const celda = 'p-3 border-x border-gray-200'
+const celda = `${tdClass} border-x border-gray-200`
+const celdaTh = `${thClass} border-x border-gray-200`
 
 function mensajeDeError(err: unknown): string {
   if (err && typeof err === 'object' && 'message' in err) {
@@ -117,25 +132,27 @@ export default function HistorialPantalla() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <ScrollText className="w-6 h-6" />
           {staff ? 'Historial de transacciones' : 'Mi historial'}
         </h1>
-        <Link
-          to="/dashboard"
-          className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-        >
+        <Link to="/dashboard" className={headerBtnClass}>
+          <ArrowLeft className="w-4 h-4" />
           Volver al menú
         </Link>
       </header>
 
-      <main className="p-8 max-w-6xl">
-        <p className="mb-4 text-sm text-gray-600">
+      <main className={mainClass}>
+        <p className="text-sm text-gray-600">
           Registro de auditoría: solo lectura. Los eventos más recientes aparecen primero.
         </p>
 
         {error && (
-          <p role="alert" className="mb-4 rounded bg-red-100 text-red-800 px-4 py-2 text-sm">
+          <p
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 text-red-800 px-4 py-3 text-sm"
+          >
             {error}
           </p>
         )}
@@ -143,30 +160,31 @@ export default function HistorialPantalla() {
         {cargando ? (
           <p className="text-gray-600">Cargando historial...</p>
         ) : registros.length === 0 && !error ? (
-          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-            📭 No hay transacciones registradas.
+          <div className={vacioClass}>
+            <Inbox className="w-8 h-8 text-gray-400" />
+            <span>No hay transacciones registradas.</span>
           </div>
         ) : (
           registros.length > 0 && (
-            <div className="bg-white rounded-lg shadow overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-600">
+            <div className={tablaContenedorClass}>
+              <table className={tablaClass}>
+                <thead>
                   <tr>
-                    {staff && <th className={celda}>Usuario</th>}
-                    <th className={celda}>Tipo de transacción</th>
-                    <th className={celda}>Fecha</th>
-                    <th className={celda}>Detalles</th>
+                    {staff && <th className={celdaTh}>Usuario</th>}
+                    <th className={celdaTh}>Tipo de transacción</th>
+                    <th className={celdaTh}>Fecha</th>
+                    <th className={celdaTh}>Detalles</th>
                   </tr>
                 </thead>
                 <tbody>
                   {registros.map((h) => (
-                    <tr key={h.id_historial} className="border-t border-gray-200">
+                    <tr key={h.id_historial} className={trZebraClass}>
                       {staff && (
                         <td className={celda}>{primero(h.usuarios)?.nombre ?? '—'}</td>
                       )}
                       <td className={celda}>
                         <span
-                          className={`px-2 py-0.5 rounded text-xs font-semibold ${claseTipo(
+                          className={`${insigniaClass} ${claseTipo(
                             h.tipo_transaccion,
                           )}`}
                         >

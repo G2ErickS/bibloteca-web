@@ -1,8 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, Ban, Inbox, Users } from 'lucide-react'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esAdmin } from './roles'
+import {
+  btnPrimarioClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  inputClass,
+  insigniaClass,
+  mainClass,
+  tablaClass,
+  tablaContenedorClass,
+  tdClass,
+  thClass,
+  trZebraClass,
+  vacioClass,
+} from './ui'
 
 type EstadoUsuario = 'Activo' | 'Suspendido' | 'Deudor'
 
@@ -33,7 +49,8 @@ interface Aviso {
 }
 
 /** Celdas con líneas verticales que separan las columnas */
-const celda = 'p-3 border-x border-gray-200'
+const celda = `${tdClass} border-x border-gray-200`
+const celdaTh = `${thClass} border-x border-gray-200`
 
 const CONTACTO_SUPER_ADMIN = 'admin@gmail.com'
 
@@ -52,9 +69,9 @@ function mensajeDeError(err: unknown): string {
 }
 
 function claseFila(estado: EstadoUsuario): string {
-  if (estado === 'Deudor') return 'bg-red-50 text-red-900'
-  if (estado === 'Suspendido') return 'bg-gray-100 text-gray-500'
-  return ''
+  if (estado === 'Deudor') return 'bg-red-50 text-red-900 hover:bg-red-100 transition-colors'
+  if (estado === 'Suspendido') return 'bg-gray-200 text-gray-500 hover:bg-gray-300 transition-colors'
+  return trZebraClass
 }
 
 function InsigniaEstado({ estado }: { estado: EstadoUsuario }) {
@@ -65,7 +82,7 @@ function InsigniaEstado({ estado }: { estado: EstadoUsuario }) {
         ? 'bg-gray-300 text-gray-700'
         : 'bg-green-100 text-green-800'
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${clase}`}>
+    <span className={`${insigniaClass} ${clase}`}>
       {estado}
     </span>
   )
@@ -204,17 +221,18 @@ export default function Usuarios() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
         <div
           role="alert"
-          className="bg-white p-8 rounded-lg shadow text-center max-w-md"
+          className="bg-white border border-gray-200 p-8 rounded-xl shadow-sm text-center max-w-md"
         >
-          <p className="text-4xl mb-3">🚫</p>
+          <Ban className="w-10 h-10 text-red-600 mx-auto mb-3" />
           <h1 className="text-xl font-bold text-red-700 mb-2">Acceso Denegado</h1>
           <p className="text-gray-600 mb-6">
             Solo los Administradores pueden gestionar usuarios.
           </p>
           <Link
             to="/dashboard"
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className={`${btnPrimarioClass} inline-flex items-center gap-2`}
           >
+            <ArrowLeft className="w-4 h-4" />
             Volver al menú
           </Link>
         </div>
@@ -224,24 +242,25 @@ export default function Usuarios() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Usuarios</h1>
-        <Link
-          to="/dashboard"
-          className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-        >
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <Users className="w-6 h-6" />
+          Usuarios
+        </h1>
+        <Link to="/dashboard" className={headerBtnClass}>
+          <ArrowLeft className="w-4 h-4" />
           Volver al menú
         </Link>
       </header>
 
-      <main className="p-8 max-w-6xl">
+      <main className={mainClass}>
         {aviso && (
           <p
             role={aviso.tipo === 'error' ? 'alert' : 'status'}
-            className={`mb-4 rounded px-4 py-2 text-sm ${
+            className={`rounded-lg border px-4 py-3 text-sm ${
               aviso.tipo === 'exito'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {aviso.texto}
@@ -251,20 +270,21 @@ export default function Usuarios() {
         {cargando ? (
           <p className="text-gray-600">Cargando usuarios...</p>
         ) : usuarios.length === 0 ? (
-          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-            📭 No hay usuarios registrados.
+          <div className={vacioClass}>
+            <Inbox className="w-8 h-8 text-gray-400" />
+            <span>No hay usuarios registrados.</span>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+          <div className={tablaContenedorClass}>
+            <table className={tablaClass}>
+              <thead>
                 <tr>
-                  <th className={celda}>Nombre</th>
-                  <th className={celda}>Rol</th>
-                  <th className={celda}>Contacto</th>
-                  <th className={celda}>Estado</th>
-                  <th className={celda}>Cambiar estado</th>
-                  <th className={celda}>Cambiar rol</th>
+                  <th className={celdaTh}>Nombre</th>
+                  <th className={celdaTh}>Rol</th>
+                  <th className={celdaTh}>Contacto</th>
+                  <th className={celdaTh}>Estado</th>
+                  <th className={celdaTh}>Cambiar estado</th>
+                  <th className={celdaTh}>Cambiar rol</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,7 +300,7 @@ export default function Usuarios() {
                   return (
                     <tr
                       key={u.id_usuario}
-                      className={`border-t border-gray-200 ${claseFila(u.estado)}`}
+                      className={claseFila(u.estado)}
                     >
                       <td className={`${celda} font-medium`}>
                         {u.nombre}
@@ -311,7 +331,7 @@ export default function Usuarios() {
                                 : undefined
                           }
                           aria-label={`Estado de ${u.nombre}`}
-                          className="border rounded px-2 py-1 bg-white text-gray-900 disabled:opacity-50"
+                          className={`${inputClass} bg-white text-gray-900 disabled:opacity-50`}
                         >
                           {ESTADOS.map((e) => (
                             <option key={e} value={e}>
@@ -338,7 +358,7 @@ export default function Usuarios() {
                                 : undefined
                           }
                           aria-label={`Rol de ${u.nombre}`}
-                          className="border rounded px-2 py-1 bg-white text-gray-900 disabled:opacity-50"
+                          className={`${inputClass} bg-white text-gray-900 disabled:opacity-50`}
                         >
                           {/* Rol guardado fuera del catálogo: se muestra pero no se puede elegir */}
                           {!rolConocido && (

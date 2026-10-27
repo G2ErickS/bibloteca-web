@@ -3,6 +3,21 @@ import { Link } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esStaff } from './roles'
+import { ArrowLeft, BookMarked, Inbox } from 'lucide-react'
+import {
+  btnPrimarioClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  insigniaClass,
+  mainClass,
+  tablaClass,
+  tablaContenedorClass,
+  tdClass,
+  thClass,
+  trZebraClass,
+  vacioClass,
+} from './ui'
 
 type EstadoPrestamo = 'Activo' | 'Finalizado' | 'Vencido'
 
@@ -64,7 +79,7 @@ const estadoClase: Record<EstadoPrestamo, string> = {
 function InsigniaEstado({ estado }: { estado: EstadoPrestamo }) {
   return (
     <span
-      className={`px-2 py-0.5 rounded text-xs font-semibold ${
+      className={`${insigniaClass} ${
         estadoClase[estado] ?? 'bg-gray-100 text-gray-800'
       }`}
     >
@@ -92,24 +107,25 @@ function TablaPrestamos({
 }: TablaProps) {
   if (prestamos.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-        {vacio}
+      <div className={vacioClass}>
+        <Inbox className="w-8 h-8 text-gray-400" />
+        <span>{vacio}</span>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50 text-gray-600">
+    <div className={tablaContenedorClass}>
+      <table className={tablaClass}>
+        <thead>
           <tr>
-            {mostrarUsuario && <th className="p-3">Usuario</th>}
-            <th className="p-3">Título del libro</th>
-            <th className="p-3">Fecha de préstamo</th>
-            <th className="p-3">Fecha límite</th>
-            <th className="p-3">Fecha de devolución</th>
-            <th className="p-3">Estado</th>
-            {onDevolver && <th className="p-3 text-right">Acción</th>}
+            {mostrarUsuario && <th className={thClass}>Usuario</th>}
+            <th className={thClass}>Título del libro</th>
+            <th className={thClass}>Fecha de préstamo</th>
+            <th className={thClass}>Fecha límite</th>
+            <th className={thClass}>Fecha de devolución</th>
+            <th className={thClass}>Estado</th>
+            {onDevolver && <th className={`${thClass} text-right`}>Acción</th>}
           </tr>
         </thead>
         <tbody>
@@ -117,24 +133,26 @@ function TablaPrestamos({
             const ocupado = procesandoId === p.id_prestamo
             const devolvible = p.estado === 'Activo' || p.estado === 'Vencido'
             return (
-              <tr key={p.id_prestamo} className="border-t">
+              <tr key={p.id_prestamo} className={trZebraClass}>
                 {mostrarUsuario && (
-                  <td className="p-3">{primero(p.usuarios)?.nombre ?? '—'}</td>
+                  <td className={tdClass}>{primero(p.usuarios)?.nombre ?? '—'}</td>
                 )}
-                <td className="p-3 font-medium">{primero(p.libros)?.titulo ?? '—'}</td>
-                <td className="p-3">{formatearFecha(p.fecha_prestamo)}</td>
-                <td className="p-3">{formatearFecha(p.fecha_limite)}</td>
-                <td className="p-3">{formatearFecha(p.fecha_devolucion)}</td>
-                <td className="p-3">
+                <td className={`${tdClass} font-medium`}>
+                  {primero(p.libros)?.titulo ?? '—'}
+                </td>
+                <td className={tdClass}>{formatearFecha(p.fecha_prestamo)}</td>
+                <td className={tdClass}>{formatearFecha(p.fecha_limite)}</td>
+                <td className={tdClass}>{formatearFecha(p.fecha_devolucion)}</td>
+                <td className={tdClass}>
                   <InsigniaEstado estado={p.estado} />
                 </td>
                 {onDevolver && (
-                  <td className="p-3 text-right">
+                  <td className={`${tdClass} text-right`}>
                     {devolvible && (
                       <button
                         onClick={() => onDevolver(p)}
                         disabled={procesandoId !== null}
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+                        className={btnPrimarioClass}
                       >
                         {ocupado ? 'Procesando...' : 'Procesar Devolución'}
                       </button>
@@ -255,7 +273,7 @@ export default function Prestamos() {
   }
 
   const claseTab = (activa: boolean) =>
-    `px-4 py-2 -mb-px border-b-2 font-medium ${
+    `px-4 py-2 -mb-px border-b-2 font-medium transition-colors ${
       activa
         ? 'border-green-600 text-green-700'
         : 'border-transparent text-gray-600 hover:text-gray-800'
@@ -263,26 +281,25 @@ export default function Prestamos() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <BookMarked className="w-6 h-6" />
           {staff ? 'Préstamos' : 'Mis préstamos'}
         </h1>
-        <Link
-          to="/dashboard"
-          className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-        >
+        <Link to="/dashboard" className={headerBtnClass}>
+          <ArrowLeft className="w-4 h-4" />
           Volver al menú
         </Link>
       </header>
 
-      <main className="p-8 max-w-6xl">
+      <main className={mainClass}>
         {aviso && (
           <p
             role={aviso.tipo === 'error' ? 'alert' : 'status'}
-            className={`mb-4 rounded px-4 py-2 text-sm ${
+            className={`rounded-lg border px-4 py-3 text-sm ${
               aviso.tipo === 'exito'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {aviso.texto}
@@ -290,7 +307,7 @@ export default function Prestamos() {
         )}
 
         {staff && (
-          <div className="flex gap-2 border-b mb-4" role="tablist">
+          <div className="flex gap-2 border-b border-gray-200" role="tablist">
             <button
               role="tab"
               aria-selected={pestana === 'activos'}
@@ -319,14 +336,14 @@ export default function Prestamos() {
               mostrarUsuario
               onDevolver={handleDevolver}
               procesandoId={procesandoId}
-              vacio="📭 No hay préstamos activos ni vencidos."
+              vacio="No hay préstamos activos ni vencidos."
             />
           ) : (
             <TablaPrestamos
               prestamos={prestamos}
               mostrarUsuario
               procesandoId={procesandoId}
-              vacio="📭 Aún no hay préstamos registrados."
+              vacio="Aún no hay préstamos registrados."
             />
           )
         ) : (
@@ -334,7 +351,7 @@ export default function Prestamos() {
             prestamos={prestamos}
             mostrarUsuario={false}
             procesandoId={procesandoId}
-            vacio="📭 No tienes préstamos registrados."
+            vacio="No tienes préstamos registrados."
           />
         )}
       </main>

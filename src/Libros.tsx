@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, BookOpen, Pencil, Plus, ShoppingCart, Trash2, X } from 'lucide-react'
+import {
+  btnPrimarioClass,
+  btnSecundarioClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  inputClass,
+  mainClass,
+} from './ui'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { useCart } from './CartContext'
@@ -45,10 +55,10 @@ function Portada({ url, titulo }: { url: string | null; titulo: string }) {
   if (!url) {
     return (
       <div
-        className="w-full h-48 bg-gray-200 rounded mb-3 flex items-center justify-center text-5xl text-gray-400"
+        className="w-full h-48 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-gray-400"
         aria-label="Sin portada"
       >
-        📖
+        <BookOpen className="w-12 h-12" />
       </div>
     )
   }
@@ -344,32 +354,33 @@ export default function Libros() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Libros</h1>
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <BookOpen className="w-6 h-6" />
+          Libros
+        </h1>
         <div className="flex items-center gap-3">
           {esLector && (
-            <Link
-              to="/carrito"
-              className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-            >
-              🛒 Carrito ({carrito.length})
+            <Link to="/carrito" className={headerBtnClass}>
+              <ShoppingCart className="w-4 h-4" />
+              Carrito ({carrito.length})
             </Link>
           )}
-          <Link
-            to="/dashboard"
-            className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-          >
+          <Link to="/dashboard" className={headerBtnClass}>
+            <ArrowLeft className="w-4 h-4" />
             Volver al menú
           </Link>
         </div>
       </header>
 
       {/* Main */}
-      <main className="p-8">
+      <main className={mainClass}>
         {mensaje && (
           <p
-            className={`mb-4 text-sm ${
-              mensaje.tipo === 'ok' ? 'text-green-700' : 'text-red-600'
+            className={`rounded-lg border px-4 py-3 text-sm ${
+              mensaje.tipo === 'ok'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {mensaje.texto}
@@ -379,16 +390,26 @@ export default function Libros() {
         {staff && (
           <button
             onClick={abrirNuevo}
-            className="mb-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className={`inline-flex items-center gap-2 ${btnPrimarioClass}`}
           >
-            {mostrarForm && !editando ? 'Cancelar' : '+ Agregar libro'}
+            {mostrarForm && !editando ? (
+              <>
+                <X className="w-4 h-4" />
+                Cancelar
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Agregar libro
+              </>
+            )}
           </button>
         )}
 
         {staff && mostrarForm && (
           <form
             onSubmit={handleGuardar}
-            className="bg-white p-6 rounded-lg shadow mb-6 max-w-md"
+            className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm w-full max-w-md"
           >
             <h2 className="text-lg font-semibold mb-3">
               {editando ? 'Editar libro' : 'Nuevo libro'}
@@ -399,7 +420,7 @@ export default function Libros() {
               placeholder="Título"
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
+              className={`w-full mb-3 ${inputClass}`}
               required
             />
             <input
@@ -407,7 +428,7 @@ export default function Libros() {
               placeholder="Autor"
               value={autor}
               onChange={(e) => setAutor(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
+              className={`w-full mb-3 ${inputClass}`}
               required
             />
             <input
@@ -415,7 +436,7 @@ export default function Libros() {
               placeholder="ISBN"
               value={isbn}
               onChange={(e) => setIsbn(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
+              className={`w-full mb-3 ${inputClass}`}
               required
             />
 
@@ -426,7 +447,7 @@ export default function Libros() {
               type="number"
               value={Number.isNaN(stock) ? '' : stock}
               onChange={(e) => setStock(e.target.valueAsNumber)}
-              className="w-full border p-2 rounded mb-1"
+              className={`w-full mb-1 ${inputClass}`}
               min={1}
               step={1}
               required
@@ -447,7 +468,7 @@ export default function Libros() {
               type="file"
               accept="image/jpeg"
               onChange={handleArchivo}
-              className="w-full border p-2 rounded mb-1"
+              className={`w-full mb-1 ${inputClass}`}
             />
             {editando?.imagen_url && !archivo && (
               <p className="text-xs text-gray-500 mb-3">
@@ -460,7 +481,7 @@ export default function Libros() {
               <button
                 type="submit"
                 disabled={guardando}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                className={btnPrimarioClass}
               >
                 {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar libro'}
               </button>
@@ -468,7 +489,7 @@ export default function Libros() {
                 type="button"
                 onClick={cerrarFormulario}
                 disabled={guardando}
-                className="border px-4 py-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                className={btnSecundarioClass}
               >
                 Cancelar
               </button>
@@ -487,9 +508,12 @@ export default function Libros() {
             {libros.map((libro) => {
               const enCarrito = estaEnCarrito(libro.id_libro)
               return (
-                <div key={libro.id_libro} className="bg-white p-4 rounded-lg shadow">
+                <div
+                  key={libro.id_libro}
+                  className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                >
                   <Portada url={libro.imagen_url} titulo={libro.titulo} />
-                  <h3 className="font-bold text-lg">{libro.titulo}</h3>
+                  <h3 className="font-bold text-lg text-gray-800">{libro.titulo}</h3>
                   <p className="text-gray-600">{libro.autor}</p>
                   <p className="text-sm text-gray-500">ISBN: {libro.isbn}</p>
                   <p className="text-sm mt-2">
@@ -501,15 +525,17 @@ export default function Libros() {
                       <button
                         onClick={() => abrirEdicion(libro)}
                         disabled={eliminandoId === libro.id_libro}
-                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
+                        <Pencil className="w-4 h-4" />
                         Editar
                       </button>
                       <button
                         onClick={() => handleEliminar(libro)}
                         disabled={eliminandoId !== null}
-                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
+                        <Trash2 className="w-4 h-4" />
                         {eliminandoId === libro.id_libro ? 'Eliminando...' : 'Eliminar'}
                       </button>
                     </div>
@@ -527,8 +553,9 @@ export default function Libros() {
                         })
                       }
                       disabled={enCarrito}
-                      className="mt-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+                      className="mt-3 inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
+                      <ShoppingCart className="w-4 h-4" />
                       {enCarrito ? 'En el carrito' : 'Añadir al carrito'}
                     </button>
                   )}
@@ -537,7 +564,7 @@ export default function Libros() {
                     <button
                       onClick={() => handleReservar(libro)}
                       disabled={reservandoId !== null}
-                      className="mt-3 bg-orange-600 text-white px-3 py-1 rounded hover:bg-orange-700 disabled:opacity-50"
+                      className="mt-3 bg-orange-600 hover:bg-orange-700 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {reservandoId === libro.id_libro
                         ? 'Reservando...'

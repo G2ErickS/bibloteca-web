@@ -3,6 +3,25 @@ import { Link } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import { useAuth } from './AuthContext'
 import { esStaff } from './roles'
+import {
+  btnPrimarioClass,
+  headerBtnClass,
+  headerClass,
+  headerTitleClass,
+  mainClass,
+  tablaClass,
+  tablaContenedorClass,
+  tdClass,
+  thClass,
+  trZebraClass,
+} from './ui'
+import {
+  ArrowLeft,
+  Banknote,
+  CheckCircle2,
+  ClipboardCheck,
+  Loader2,
+} from 'lucide-react'
 
 type EstadoMulta = 'Pendiente' | 'Pagada'
 
@@ -69,7 +88,9 @@ function InsigniaEstado({ estado }: { estado: EstadoMulta }) {
       ? 'bg-red-100 text-red-700'
       : 'bg-green-100 text-green-800'
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${clase}`}>
+    <span
+      className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${clase}`}
+    >
       {estado}
     </span>
   )
@@ -197,23 +218,29 @@ export default function Multas() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">{staff ? 'Multas' : 'Mis multas'}</h1>
-        <Link
-          to="/dashboard"
-          className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-        >
+      <header className={headerClass}>
+        <h1 className={headerTitleClass}>
+          <Banknote className="w-6 h-6" />
+          {staff ? 'Multas' : 'Mis multas'}
+        </h1>
+        <Link to="/dashboard" className={headerBtnClass}>
+          <ArrowLeft className="w-4 h-4" />
           Volver al menú
         </Link>
       </header>
 
-      <main className="p-8 max-w-6xl">
+      <main className={mainClass}>
         {staff && (
           <button
             onClick={handleRevisar}
             disabled={ocupado}
-            className="mb-6 bg-orange-600 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow hover:bg-orange-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
+            {revisando ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ClipboardCheck className="w-5 h-5" />
+            )}
             {revisando ? 'Revisando...' : 'Ejecutar Revisión de Vencimientos'}
           </button>
         )}
@@ -221,10 +248,10 @@ export default function Multas() {
         {aviso && (
           <p
             role={aviso.tipo === 'error' ? 'alert' : 'status'}
-            className={`mb-4 rounded px-4 py-2 text-sm ${
+            className={`rounded-lg border px-4 py-3 text-sm ${
               aviso.tipo === 'exito'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-800'
             }`}
           >
             {aviso.texto}
@@ -234,20 +261,23 @@ export default function Multas() {
         {cargando ? (
           <p className="text-gray-600">Cargando multas...</p>
         ) : multas.length === 0 ? (
-          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
-            {staff ? '✅ No hay multas registradas.' : '✅ No tienes multas.'}
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 flex flex-col items-center gap-3 text-gray-600">
+            <CheckCircle2 className="w-8 h-8 text-green-600" />
+            <span>
+              {staff ? 'No hay multas registradas.' : 'No tienes multas.'}
+            </span>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+          <div className={tablaContenedorClass}>
+            <table className={tablaClass}>
+              <thead>
                 <tr>
-                  {staff && <th className="p-3">Usuario</th>}
-                  <th className="p-3">Libro</th>
-                  <th className="p-3">Monto</th>
-                  <th className="p-3">Fecha de generación</th>
-                  <th className="p-3">Estado</th>
-                  {staff && <th className="p-3 text-right">Acción</th>}
+                  {staff && <th className={thClass}>Usuario</th>}
+                  <th className={thClass}>Libro</th>
+                  <th className={thClass}>Monto</th>
+                  <th className={thClass}>Fecha de generación</th>
+                  <th className={thClass}>Estado</th>
+                  {staff && <th className={`${thClass} text-right`}>Acción</th>}
                 </tr>
               </thead>
               <tbody>
@@ -257,30 +287,38 @@ export default function Multas() {
                   return (
                     <tr
                       key={m.id_multa}
-                      className={`border-t ${pendiente ? 'bg-red-50' : ''}`}
+                      className={
+                        pendiente
+                          ? 'bg-red-50 hover:bg-red-100 transition-colors'
+                          : trZebraClass
+                      }
                     >
                       {staff && (
-                        <td className="p-3">{primero(m.usuarios)?.nombre ?? '—'}</td>
+                        <td className={tdClass}>
+                          {primero(m.usuarios)?.nombre ?? '—'}
+                        </td>
                       )}
-                      <td className="p-3">{titulo ?? '—'}</td>
+                      <td className={`${tdClass} font-medium`}>{titulo ?? '—'}</td>
                       <td
-                        className={`p-3 font-semibold ${
+                        className={`${tdClass} font-semibold ${
                           pendiente ? 'text-red-700' : ''
                         }`}
                       >
                         {formatearMonto(m.monto)}
                       </td>
-                      <td className="p-3">{formatearFecha(m.fecha_generacion)}</td>
-                      <td className="p-3">
+                      <td className={tdClass}>
+                        {formatearFecha(m.fecha_generacion)}
+                      </td>
+                      <td className={tdClass}>
                         <InsigniaEstado estado={m.estado} />
                       </td>
                       {staff && (
-                        <td className="p-3 text-right">
+                        <td className={`${tdClass} text-right`}>
                           {pendiente && (
                             <button
                               onClick={() => handlePagar(m)}
                               disabled={ocupado}
-                              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+                              className={btnPrimarioClass}
                             >
                               {pagandoId === m.id_multa
                                 ? 'Procesando...'
